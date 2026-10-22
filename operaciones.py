@@ -31,3 +31,25 @@ def registrar_expediente(expedientes, documento, razon_social, tramite, giro, ri
                   giro.strip().upper(), riesgo, fecha, int(folios), "RECIBIDO", "SIN ARCHIVAR"]
     expedientes.append(expediente)
     return codigo
+
+
+def buscar_por_codigo(expedientes, codigo):
+    """Búsqueda secuencial: devuelve la posición del expediente o -1 si no existe."""
+    codigo = codigo.strip().upper()
+    for i in range(len(expedientes)):
+        if expedientes[i][CODIGO] == codigo:
+            return i
+    return -1
+
+
+def ordenar_por_codigo(expedientes):
+    """Ordena los expedientes por código con el método de burbuja."""
+    n = len(expedientes)
+    for i in range(n - 1):
+        intercambio = False
+        for j in range(n - 1 - i):
+            if expedientes[j][CODIGO] > expedientes[j + 1][CODIGO]:
+                expedientes[j], expedientes[j + 1] = expedientes[j + 1], expedientes[j]
+                intercambio = True
+        if not intercambio:
+            break
