@@ -3,6 +3,25 @@ Módulo de validaciones.
 Verifica los datos del expediente antes de registrarlos.
 """
 
+# Requisitos principales según el nivel de riesgo del establecimiento
+REQUISITOS_BAJO_MEDIO = [
+    "Formato de declaración jurada de licencia de funcionamiento",
+    "Reporte de nivel de riesgo del establecimiento",
+    "Declaración jurada de cumplimiento de condiciones de seguridad",
+    "Ficha RUC",
+    "Recibo de pago por derecho de trámite",
+]
+
+REQUISITOS_ALTO_MUY_ALTO = [
+    "Formato de declaración jurada de licencia de funcionamiento",
+    "Reporte de nivel de riesgo del establecimiento",
+    "Planos de ubicación, arquitectura y seguridad firmados",
+    "Certificado de medición del sistema de puesta a tierra",
+    "Plan de seguridad del establecimiento",
+    "Ficha RUC",
+    "Recibo de pago por derecho de trámite",
+]
+
 NIVELES_RIESGO = ["BAJO", "MEDIO", "ALTO", "MUY ALTO"]
 
 
@@ -43,3 +62,23 @@ def validar_folios(folios):
 def validar_texto(texto, minimo=3):
     """Devuelve True si el texto tiene al menos la cantidad mínima de caracteres."""
     return len(texto.strip()) >= minimo
+
+
+def requisitos_por_riesgo(nivel):
+    """Devuelve la lista de requisitos que corresponde al nivel de riesgo."""
+    if nivel in ("BAJO", "MEDIO"):
+        return REQUISITOS_BAJO_MEDIO
+    return REQUISITOS_ALTO_MUY_ALTO
+
+
+def verificar_requisitos(nivel, respuestas):
+    """
+    Recibe el nivel de riesgo y una lista de respuestas (True o False),
+    una por requisito. Devuelve la lista de requisitos faltantes.
+    """
+    requisitos = requisitos_por_riesgo(nivel)
+    faltantes = []
+    for i in range(len(requisitos)):
+        if not respuestas[i]:
+            faltantes.append(requisitos[i])
+    return faltantes
