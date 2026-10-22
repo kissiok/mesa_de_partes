@@ -53,3 +53,25 @@ def ordenar_por_codigo(expedientes):
                 intercambio = True
         if not intercambio:
             break
+
+
+def actualizar_estado(expedientes, posicion, nuevo_estado, estante="", caja=""):
+    """Cambia el estado de un expediente respetando las reglas del archivo. Devuelve un mensaje."""
+    expediente = expedientes[posicion]
+    if expediente[ESTADO] == "ARCHIVADO":
+        return "Un expediente archivado no puede cambiar de estado."
+    if nuevo_estado == "ARCHIVADO":
+        if expediente[ESTADO] not in ("APROBADO", "DENEGADO"):
+            return "Solo se archivan expedientes aprobados o denegados."
+        expediente[UBICACION] = "ESTANTE " + estante + " - CAJA " + caja
+    expediente[ESTADO] = nuevo_estado
+    return "Estado actualizado a " + nuevo_estado + "."
+
+
+def listar_expedientes(expedientes):
+    """Devuelve las líneas de texto del listado general."""
+    lineas = []
+    for expediente in expedientes:
+        lineas.append(expediente[CODIGO].ljust(15) + expediente[RAZON_SOCIAL][:32].ljust(34)
+                      + expediente[TRAMITE].ljust(23) + expediente[FECHA].ljust(12) + expediente[ESTADO])
+    return lineas
