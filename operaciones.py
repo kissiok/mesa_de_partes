@@ -7,7 +7,8 @@ en una lista de listas (arreglo bidimensional).
 # Posición de cada dato dentro del expediente
 CODIGO, DOCUMENTO, RAZON_SOCIAL, TRAMITE, GIRO, RIESGO, FECHA, FOLIOS, ESTADO, UBICACION = range(10)
 
-TRAMITES = ["LICENCIA NUEVA", "CAMBIO DE GIRO", "CESE DE ACTIVIDADES", "DUPLICADO DE LICENCIA"]
+TRAMITES = ["LICENCIA NUEVA", "INSPECCION TECNICA ITSE", "CAMBIO DE GIRO", "CESE DE ACTIVIDADES",
+            "DUPLICADO DE LICENCIA"]
 ESTADOS = ["RECIBIDO", "EN EVALUACION", "OBSERVADO", "APROBADO", "DENEGADO", "ARCHIVADO"]
 
 
@@ -73,5 +74,5 @@ def listar_expedientes(expedientes):
     lineas = []
     for expediente in expedientes:
         lineas.append(expediente[CODIGO].ljust(15) + expediente[RAZON_SOCIAL][:32].ljust(34)
-                      + expediente[TRAMITE].ljust(23) + expediente[FECHA].ljust(12) + expediente[ESTADO])
+                      + expediente[TRAMITE].ljust(25) + expediente[FECHA].ljust(12) + expediente[ESTADO])
     return lineas
