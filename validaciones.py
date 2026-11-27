@@ -36,8 +36,13 @@ def validar_documento(documento):
     return True
 
 
+def es_bisiesto(anio):
+    """Un año es bisiesto si es divisible entre 4, salvo los divisibles entre 100 que no lo son entre 400."""
+    return (anio % 4 == 0 and anio % 100 != 0) or anio % 400 == 0
+
+
 def validar_fecha(fecha):
-    """Devuelve True si la fecha tiene el formato dd/mm/aaaa y valores posibles."""
+    """Devuelve True si la fecha tiene el formato dd/mm/aaaa y existe en el calendario."""
     partes = fecha.strip().split("/")
     if len(partes) != 3:
         return False
@@ -47,9 +52,11 @@ def validar_fecha(fecha):
     if not (dia.isdigit() and mes.isdigit() and anio.isdigit()):
         return False
     dia, mes, anio = int(dia), int(mes), int(anio)
-    dias_por_mes = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
     if mes < 1 or mes > 12 or anio < 2000:
         return False
+    dias_por_mes = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    if es_bisiesto(anio):
+        dias_por_mes[1] = 29
     return 1 <= dia <= dias_por_mes[mes - 1]
 
 
@@ -60,8 +67,11 @@ def validar_folios(folios):
 
 
 def validar_texto(texto, minimo=3):
-    """Devuelve True si el texto tiene al menos la cantidad mínima de caracteres."""
-    return len(texto.strip()) >= minimo
+    """
+    Devuelve True si el texto tiene al menos la cantidad mínima de caracteres
+    y no contiene punto y coma, que es el separador del archivo de texto.
+    """
+    return len(texto.strip()) >= minimo and ";" not in texto
 
 
 def requisitos_por_riesgo(nivel):
