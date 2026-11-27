@@ -4,9 +4,10 @@ Ejecutar con: python pruebas.py
 """
 
 import os
-from validaciones import validar_documento, validar_fecha, validar_folios, verificar_requisitos
+from validaciones import validar_documento, validar_fecha, validar_folios, validar_texto, verificar_requisitos
 from operaciones import generar_codigo, registrar_expediente, buscar_por_codigo, ordenar_por_codigo, actualizar_estado
 from archivo import guardar_expedientes, cargar_expedientes
+import base_datos
 
 aprobadas = 0
 total = 0
@@ -31,6 +32,9 @@ probar("Fecha 32/08/2026 es inválida", validar_fecha("32/08/2026"), False)
 probar("Fecha con guiones es inválida", validar_fecha("16-10-2026"), False)
 probar("30 folios es válido", validar_folios("30"), True)
 probar("0 folios es inválido", validar_folios("0"), False)
+probar("Fecha 29/02/2026 es inválida (2026 no es bisiesto)", validar_fecha("29/02/2026"), False)
+probar("Fecha 29/02/2028 es válida (2028 es bisiesto)", validar_fecha("29/02/2028"), True)
+probar("Texto con punto y coma es inválido", validar_texto("CORPORACION; SAC"), False)
 probar("Requisito faltante detectado", len(verificar_requisitos("MEDIO", [True, True, False, True, True])), 1)
 
 print("== Registro, búsqueda y ordenamiento ==")
@@ -59,5 +63,24 @@ probar("Ubicación física registrada al archivar", lista[1][9], "ESTANTE 3 - CA
 guardar_expedientes(lista, "prueba_expedientes.txt")
 probar("Los datos se recuperan del archivo", cargar_expedientes("prueba_expedientes.txt"), lista)
 os.remove("prueba_expedientes.txt")
+
+print("== Base de datos MySQL ==")
+if base_datos.conectar() is None:
+    print("OMITIDAS   MySQL no está disponible en este equipo")
+else:
+    prueba = [["PRU-2026-0001", "20510983662", "CORPORACION TEXTIL UNIDOS SAC", "INSPECCION TECNICA ITSE",
+               "ESTABLECIMIENTO COMERCIAL", "MEDIO", "16/10/2026", 30, "RECIBIDO", "SIN ARCHIVAR"]]
+    probar("Se guarda un expediente en MySQL", base_datos.guardar_expedientes_bd(prueba), True)
+    recuperados = [e for e in base_datos.cargar_expedientes_bd() if e[0] == "PRU-2026-0001"]
+    probar("El expediente se recupera igual desde MySQL", recuperados, prueba)
+    prueba[0][8] = "EN EVALUACION"
+    base_datos.guardar_expedientes_bd(prueba)
+    recuperados = [e for e in base_datos.cargar_expedientes_bd() if e[0] == "PRU-2026-0001"]
+    probar("El cambio de estado se actualiza en MySQL", recuperados[0][8], "EN EVALUACION")
+    conexion = base_datos.conectar()
+    cursor = conexion.cursor()
+    cursor.execute("DELETE FROM expediente WHERE codigo LIKE 'PRU-%'")
+    conexion.commit()
+    conexion.close()
 
 print("Resultado:", aprobadas, "de", total, "pruebas correctas")
