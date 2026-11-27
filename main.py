@@ -8,9 +8,31 @@ from validaciones import (validar_documento, validar_fecha, validar_folios, vali
 from operaciones import (registrar_expediente, buscar_por_codigo, ordenar_por_codigo,
                          actualizar_estado, listar_expedientes, TRAMITES, ESTADOS)
 from archivo import guardar_expedientes, cargar_expedientes
+from base_datos import guardar_expedientes_bd, cargar_expedientes_bd
 
 ETIQUETAS = ["Código", "RUC o DNI", "Administrado", "Trámite", "Giro", "Nivel de riesgo",
              "Fecha de ingreso", "Folios", "Estado", "Ubicación física"]
+
+
+def cargar_todo():
+    """Carga los expedientes desde MySQL; si no hay conexión, desde el archivo de texto."""
+    expedientes = cargar_expedientes_bd()
+    if expedientes is None:
+        print("Aviso: sin conexión a MySQL, se trabaja con el archivo expedientes.txt.")
+        return cargar_expedientes()
+    respaldo = cargar_expedientes()
+    if len(expedientes) == 0 and len(respaldo) > 0:
+        guardar_expedientes_bd(respaldo)
+        expedientes = respaldo
+    print("Conectado a MySQL:", len(expedientes), "expedientes cargados.")
+    return expedientes
+
+
+def guardar_todo(expedientes):
+    """Guarda siempre en el archivo de texto y, si hay conexión, también en MySQL."""
+    guardar_expedientes(expedientes)
+    if not guardar_expedientes_bd(expedientes):
+        print("  Aviso: guardado solo en expedientes.txt (MySQL no disponible).")
 
 
 def pedir_dato(mensaje, validar, error):
@@ -35,9 +57,9 @@ def elegir_opcion(titulo, opciones):
 def opcion_registrar(expedientes):
     print("\n--- REGISTRAR EXPEDIENTE ---")
     documento = pedir_dato("RUC o DNI: ", validar_documento, "el DNI debe tener 8 dígitos y el RUC 11.")
-    razon = pedir_dato("Razón social o nombre: ", validar_texto, "ingrese al menos 3 caracteres.")
+    razon = pedir_dato("Razón social o nombre: ", validar_texto, "ingrese al menos 3 caracteres, sin punto y coma.")
     tramite = elegir_opcion("Tipo de trámite:", TRAMITES)
-    giro = pedir_dato("Giro del negocio: ", validar_texto, "ingrese al menos 3 caracteres.")
+    giro = pedir_dato("Giro del negocio: ", validar_texto, "ingrese al menos 3 caracteres, sin punto y coma.")
     riesgo = elegir_opcion("Nivel de riesgo:", NIVELES_RIESGO)
     fecha = pedir_dato("Fecha de ingreso (dd/mm/aaaa): ", validar_fecha, "fecha no válida, use el formato dd/mm/aaaa.")
     folios = pedir_dato("Número de folios: ", validar_folios, "debe ser un número mayor que cero.")
@@ -55,7 +77,7 @@ def opcion_registrar(expedientes):
         return
 
     codigo = registrar_expediente(expedientes, documento, razon, tramite, giro, riesgo, fecha, folios)
-    guardar_expedientes(expedientes)
+    guardar_todo(expedientes)
     print("Expediente registrado con código", codigo)
 
 
@@ -71,7 +93,7 @@ def opcion_buscar(expedientes):
 
 def opcion_ordenar(expedientes):
     ordenar_por_codigo(expedientes)
-    guardar_expedientes(expedientes)
+    guardar_todo(expedientes)
     print("\nExpedientes ordenados por código.")
 
 
@@ -87,7 +109,7 @@ def opcion_actualizar(expedientes):
         estante = pedir_dato("Estante: ", lambda x: x.strip() != "", "ingrese el estante.")
         caja = pedir_dato("Caja: ", lambda x: x.strip() != "", "ingrese la caja.")
     print(actualizar_estado(expedientes, posicion, nuevo, estante, caja))
-    guardar_expedientes(expedientes)
+    guardar_todo(expedientes)
 
 
 def opcion_listar(expedientes):
@@ -101,7 +123,7 @@ def opcion_listar(expedientes):
 
 
 def menu_principal():
-    expedientes = cargar_expedientes()
+    expedientes = cargar_todo()
     opcion = ""
     while opcion != "0":
         print("\n===== MESA DE PARTES DIGITAL - LICENCIAS DE FUNCIONAMIENTO =====")
@@ -123,7 +145,7 @@ def menu_principal():
         elif opcion == "5":
             opcion_listar(expedientes)
         elif opcion == "0":
-            guardar_expedientes(expedientes)
+            guardar_todo(expedientes)
             print("Datos guardados. Fin del sistema.")
         else:
             print("Opción no válida.")
